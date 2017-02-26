@@ -184,13 +184,59 @@ int getch(void);
 int tinit(void);
 
 int main(int argc, char *argv[]){
-	init();
 	Cell block[4][4];
-	copyBlock(block_type[5],block);
-	for(int y=0;y<HEIGHT;++y){
-		printBlock(block,5,y);
-		wait_ms(500);
-		clearBlock(block,5,y);
+	struct timeval start_time, now_time, pre_time;
+	double duration, thold;
+	int x, y, c, prex, prey;
+
+	x = 5; y = 0;
+	thold = 0.5;
+	gettimeofday(&start_time, NULL);
+	pre_time = start_time;
+	copyBlock(block_type[1],block);
+	init();
+	printBlock(block, x, y);
+
+	for(y=0;y<HEIGHT;){
+
+		prex = x;
+		prey = y;	
+
+		if(kbhit() != 0){
+			clearBlock(block,x,y);
+			c = getch();
+			if(c == 0x1b){
+				c = getch();
+				if(c == 0x5b){
+					c = getch();
+					switch(c){
+						case 0x41:
+							break;
+						case 0x42:
+							break;
+						case 0x43:
+							x++;
+							break;
+						case 0x44:
+							x--;
+							break;
+					}
+				}
+			}else{
+				reset();
+				exit(1);
+			}
+		}
+		gettimeofday(&now_time, NULL);
+		duration = now_time.tv_sec-pre_time.tv_sec + (now_time.tv_usec-pre_time.tv_usec) / 1000000.0;
+		if(duration > thold){
+			pre_time = now_time;
+			y++;
+		}
+		if(prex!=x ||prey!=y){
+			clearBlock(block,prex,prey);
+			printBlock(block,x,y);
+		}
 	}
 	reset();
 }
